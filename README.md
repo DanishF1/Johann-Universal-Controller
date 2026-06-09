@@ -6,7 +6,7 @@
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![XML](https://img.shields.io/badge/xml-%2300599C.svg?style=for-the-badge&logo=xml&logoColor=white)
 ![Open Source](https://img.shields.io/badge/Open%20Source-%E2%99%A5-red?style=for-the-badge)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
+![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg?style=for-the-badge)
 
 *A specialized, high-performance Android remote control application designed for seamless communication with the Johann Drone.*
 
@@ -48,4 +48,4 @@ Contributions, issues, and feature requests are welcome! Feel free to check the 
 
 ## 📝 License
 
-This project is open-source and available under the [MIT License](LICENSE).
+This project is open-source and available under the [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/).
