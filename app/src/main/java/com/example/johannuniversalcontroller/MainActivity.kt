@@ -2,10 +2,13 @@ package com.example.johannuniversalcontroller
 
 import android.os.Bundle
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.widget.SwitchCompat
-import android. widget. Toast
+import androidx. core. view. WindowInsetsControllerCompat
+import androidx. core. view. WindowInsetsCompat
+import androidx. core. view. WindowCompat
 
 val main = R.layout.main_layout
 val BLname: String = "Johann 1.0"
@@ -20,7 +23,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(main)
-        Toast.makeText(this, "Johann Universal Controller for 1.0", Toast.LENGTH_LONG).show()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowInsetsControllerCompat(window, window.decorView).let { controller ->
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
+
         // 2. HUBUNGKAN VARIABEL DENGAN ID DI XML
         val ascendBut: SwitchCompat = findViewById(R.id.Ascend)
         val hoverBut: SwitchCompat = findViewById(R.id.Hover)
