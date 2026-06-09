@@ -5,7 +5,7 @@
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/kotlin-%237F52FF.svg?style=for-the-badge&logo=kotlin&logoColor=white)
 ![XML](https://img.shields.io/badge/xml-%2300599C.svg?style=for-the-badge&logo=xml&logoColor=white)
-![Open Source](https://img.shields.io/badge/Open%20Source-%E2%99%A5-red?style=for-the-badge)
+![Source Available](https://img.shields.io/badge/Source_Available-%E2%99%A5-blue?style=for-the-badge)
 ![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg?style=for-the-badge)
 
 *A specialized, high-performance Android remote control application designed for seamless communication with the Johann Drone.*
