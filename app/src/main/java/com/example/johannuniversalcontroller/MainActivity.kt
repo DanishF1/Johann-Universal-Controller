@@ -9,8 +9,11 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx. core. view. WindowInsetsControllerCompat
 import androidx. core. view. WindowInsetsCompat
 import androidx. core. view. WindowCompat
+import android. util. Log
+import android.widget.Switch
 
 val main = R.layout.main_layout
+val testing = R.layout.geminil
 val BLname: String = "Johann 1.0"
 var isButtonActive: Boolean = false
 var initializing: Boolean = false
@@ -31,7 +34,7 @@ class MainActivity : ComponentActivity() {
 
 
         // 2. HUBUNGKAN VARIABEL DENGAN ID DI XML
-        val ascendBut: SwitchCompat = findViewById(R.id.Ascend)
+        val ascendBut: Switch = findViewById(R.id.Ascend)
         val hoverBut: SwitchCompat = findViewById(R.id.Hover)
         val descendBut: SwitchCompat = findViewById(R.id.Descend)
         val altitudeSeek: SeekBar = findViewById(R.id.altitude)
@@ -43,6 +46,7 @@ class MainActivity : ComponentActivity() {
                     ascendBut.isChecked = false
                     descendBut.isChecked = false
                     isButtonActive = true
+                    Log.d(BLname, "Hover Button is Active")
                 }
             }
 
@@ -51,6 +55,7 @@ class MainActivity : ComponentActivity() {
                     hoverBut.isChecked = false
                     descendBut.isChecked = false
                     isButtonActive = true
+                    Log.d(BLname, "Ascend Button is Active")
                 }
             }
 
@@ -59,6 +64,7 @@ class MainActivity : ComponentActivity() {
                     hoverBut.isChecked = false
                     ascendBut.isChecked = false
                     isButtonActive = true
+                    Log.d(BLname, "Descend Button is Active")
                 }
             }
         }
