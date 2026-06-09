@@ -22,47 +22,45 @@
 
             </ImageView>
 
-            <Switch
+            <androidx.appcompat.widget.SwitchCompat
                 android:layout_width="200px"
                 android:layout_height="300px"
-                android:shadowColor="@color/black"
                 app:layout_constraintRight_toRightOf="@id/logo"
                 app:layout_constraintLeft_toLeftOf="@id/logo"
                 app:layout_constraintTop_toBottomOf="@id/logo"
                 android:id="@+id/Ascend"
-                android:text="Ascend"
-                android:textAlignment="center"
-                android:fontFamily="@font/poppins_light"
-                android:textColor="@color/white"
+                app:showText="false"
+                android:textOn=""
+                android:textOff=""
+                android:text=""
                 android:rotation="90"
 
-                ></Switch>
-            <Switch
+                ></androidx.appcompat.widget.SwitchCompat>
+            <androidx.appcompat.widget.SwitchCompat
                 android:layout_width="200px"
                 android:layout_height="300px"
-                android:shadowColor="@color/black"
                 app:layout_constraintTop_toBottomOf="@id/logo"
                 app:layout_constraintRight_toLeftOf="@id/Ascend"
                 android:id="@+id/Hover"
-                android:text="Hover"
-                android:textAlignment="center"
-                android:fontFamily="@font/poppins_light"
-                android:textColor="@color/white"
-                android:rotation="90"></Switch>
-            <Switch
+                app:showText="false"
+                android:textOn=""
+                android:textOff=""
+                android:text=""
+                android:rotation="90"></androidx.appcompat.widget.SwitchCompat>
+            <androidx.appcompat.widget.SwitchCompat
                 android:layout_width="200px"
                 android:layout_height="300px"
-                android:shadowColor="@color/black"
                 app:layout_constraintRight_toLeftOf="@id/Hover"
                 app:layout_constraintTop_toBottomOf="@id/logo"
                 android:id="@+id/Descend"
-                android:text="Descend"
-                android:textAlignment="center"
-                android:fontFamily="@font/poppins_light"
-                android:textColor="@color/white"
+                app:showText="false"
+                android:textOn=""
+                android:textOff=""
+                android:text=""
                 android:rotation="90">
 
-            </Switch>
+            </androidx.appcompat.widget.SwitchCompat>
+
             <SeekBar
                 android:layout_width="700px"
                 android:layout_height="50px"
