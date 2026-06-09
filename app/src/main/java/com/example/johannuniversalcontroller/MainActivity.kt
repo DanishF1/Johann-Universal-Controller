@@ -14,11 +14,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.johannuniversalcontroller.ui.theme.JohannUniversalControllerTheme
 val main = R.layout.main_layout
 val BLname: String = "Johann 1.0"
+val ascendBut = R.id.Ascend
+val hoverBut = R.id.Hover
+val descendBut = R.id.Descend
+val AltitudeSeek = R.id.altitude
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(main)
+        controlling()
     }
 
     override fun onPause() {
@@ -30,7 +35,15 @@ class MainActivity : ComponentActivity() {
     }
 
     fun controlling(){
-        
+        if (hoverBut == 1){
+            print("HOVERING")
+        }else if (ascendBut == 1){
+            print("ASCENDING")
+        }else if (descendBut == 1){
+            print("DECENCING")
+        }
+
+        }
     }
-}
+
 

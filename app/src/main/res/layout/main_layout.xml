@@ -1,11 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
-    android:id="@+id/drawer_layout"
+<androidx.drawerlayout.widget.DrawerLayout android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:fitsSystemWindows="true"
-    android:background="@color/black">
+    android:background="@color/black"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <ImageView
+                android:layout_width="500px"
+                android:layout_height="500px"
+                android:id="@+id/logo"
+                android:src="@mipmap/ic_launcher"
+                android:rotation="90"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                >
+
+            </ImageView>
+
+            <Switch
+                android:layout_width="200px"
+                android:layout_height="300px"
+                android:shadowColor="@color/black"
+                app:layout_constraintRight_toRightOf="@id/logo"
+                app:layout_constraintLeft_toLeftOf="@id/logo"
+                app:layout_constraintTop_toBottomOf="@id/logo"
+                android:id="@+id/Ascend"
+                android:text="Ascend"
+                android:textAlignment="center"
+                android:fontFamily="@font/poppins_light"
+                android:textColor="@color/white"
+                android:rotation="90"
+
+                ></Switch>
+            <Switch
+                android:layout_width="200px"
+                android:layout_height="300px"
+                android:shadowColor="@color/black"
+                app:layout_constraintTop_toBottomOf="@id/logo"
+                app:layout_constraintRight_toLeftOf="@id/Ascend"
+                android:id="@+id/Hover"
+                android:text="Hover"
+                android:textAlignment="center"
+                android:fontFamily="@font/poppins_light"
+                android:textColor="@color/white"
+                android:rotation="90"></Switch>
+            <Switch
+                android:layout_width="200px"
+                android:layout_height="300px"
+                android:shadowColor="@color/black"
+                app:layout_constraintRight_toLeftOf="@id/Hover"
+                app:layout_constraintTop_toBottomOf="@id/logo"
+                android:id="@+id/Descend"
+                android:text="Descend"
+                android:textAlignment="center"
+                android:fontFamily="@font/poppins_light"
+                android:textColor="@color/white"
+                android:rotation="90">
+
+            </Switch>
+            <SeekBar
+                android:layout_width="700px"
+                android:layout_height="50px"
+                app:layout_constraintTop_toBottomOf="@id/Descend"
+                android:layout_marginTop="25dp"
+                android:id="@+id/altitude">
+
+            </SeekBar>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     </androidx.drawerlayout.widget.DrawerLayout>
