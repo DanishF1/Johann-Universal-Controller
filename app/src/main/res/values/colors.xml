@@ -7,4 +7,6 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="seekbar_track_inactive">#424242</color> <color name="seekbar_track_active">#BDBDBD</color>   <color name="seekbar_thumb_color">#FFFFFF</color>
+    <color name="switch_thumb_off">#9E9E9E</color>
 </resources>

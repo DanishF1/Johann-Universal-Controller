@@ -23,52 +23,135 @@
             </ImageView>
 
             <androidx.appcompat.widget.SwitchCompat
-                android:layout_width="200px"
-                android:layout_height="300px"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 app:layout_constraintRight_toRightOf="@id/logo"
                 app:layout_constraintLeft_toLeftOf="@id/logo"
                 app:layout_constraintTop_toBottomOf="@id/logo"
                 android:id="@+id/Ascend"
                 app:showText="false"
-                android:textOn=""
-                android:textOff=""
-                android:text=""
+                app:track="@drawable/custom_switch_off"
+                android:thumb="@drawable/custom_switch_thub"
                 android:rotation="90"
-
+                android:gravity="center"
                 ></androidx.appcompat.widget.SwitchCompat>
             <androidx.appcompat.widget.SwitchCompat
-                android:layout_width="200px"
-                android:layout_height="300px"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/logo"
                 app:layout_constraintRight_toLeftOf="@id/Ascend"
                 android:id="@+id/Hover"
+                app:track="@drawable/custom_switch_off"
+                android:thumb="@drawable/custom_switch_thub"
                 app:showText="false"
-                android:textOn=""
-                android:textOff=""
-                android:text=""
+                android:gravity="center"
                 android:rotation="90"></androidx.appcompat.widget.SwitchCompat>
             <androidx.appcompat.widget.SwitchCompat
-                android:layout_width="200px"
-                android:layout_height="300px"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 app:layout_constraintRight_toLeftOf="@id/Hover"
                 app:layout_constraintTop_toBottomOf="@id/logo"
                 android:id="@+id/Descend"
+                app:track="@drawable/custom_switch_off"
+                android:thumb="@drawable/custom_switch_thub"
                 app:showText="false"
-                android:textOn=""
-                android:textOff=""
-                android:text=""
+                android:gravity="center"
                 android:rotation="90">
 
             </androidx.appcompat.widget.SwitchCompat>
+            <androidx.appcompat.widget.SwitchCompat
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintRight_toRightOf="@id/logo"
+                app:layout_constraintLeft_toLeftOf="@id/logo"
+                app:layout_constraintBottom_toTopOf="@id/logo"
+                android:id="@+id/ConnectBLE"
+                app:showText="false"
+                app:track="@drawable/custom_switch_off"
+                android:thumb="@drawable/custom_switch_thub"
+                android:rotation="90"
+                android:gravity="center"
+                ></androidx.appcompat.widget.SwitchCompat>
+
 
             <SeekBar
-                android:layout_width="700px"
-                android:layout_height="50px"
+                android:layout_width="900px"
+                android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@id/Descend"
-                android:layout_marginTop="25dp"
+                android:layout_marginTop="155dp"
+                android:progressDrawable="@drawable/custom_seekbar_track"
+
+                android:thumb="@drawable/custom_seekbar_thumb"
+
+                android:splitTrack="false"
                 android:id="@+id/altitude">
 
             </SeekBar>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ascend"
+                android:fontFamily="@font/poppins_regular"
+                android:textSize="40px"
+                android:rotation="90"
+                android:textColor="@color/white"
+                app:layout_constraintTop_toBottomOf="@id/Ascend"
+                app:layout_constraintLeft_toLeftOf="@id/Ascend"
+                app:layout_constraintRight_toRightOf="@id/Ascend"
+                android:layout_marginTop="37dp"
+
+
+
+                ></TextView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hover"
+                android:fontFamily="@font/poppins_regular"
+                android:textSize="40px"
+                android:rotation="90"
+                android:textColor="@color/white"
+                app:layout_constraintTop_toBottomOf="@id/Hover"
+                app:layout_constraintLeft_toLeftOf="@id/Hover"
+                app:layout_constraintRight_toRightOf="@id/Hover"
+                android:layout_marginTop="30dp"
+
+
+
+                ></TextView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Descend"
+                android:fontFamily="@font/poppins_regular"
+                android:textSize="40px"
+                android:rotation="90"
+                android:textColor="@color/white"
+                app:layout_constraintTop_toBottomOf="@id/Descend"
+                app:layout_constraintLeft_toLeftOf="@id/Descend"
+                app:layout_constraintRight_toRightOf="@id/Descend"
+                android:layout_marginTop="40dp"
+
+
+
+                ></TextView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Connect BLE"
+                android:fontFamily="@font/poppins_regular"
+                android:textSize="40px"
+                android:rotation="90"
+                android:textColor="@color/white"
+                app:layout_constraintBottom_toTopOf="@id/ConnectBLE"
+                app:layout_constraintLeft_toLeftOf="@id/ConnectBLE"
+                app:layout_constraintRight_toRightOf="@id/ConnectBLE"
+                android:layout_marginBottom="57dp"
+
+
+
+                ></TextView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

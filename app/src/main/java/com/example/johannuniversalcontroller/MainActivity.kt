@@ -5,6 +5,7 @@ import android.widget.SeekBar
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.widget.SwitchCompat
+import android. widget. Toast
 
 val main = R.layout.main_layout
 val BLname: String = "Johann 1.0"
@@ -19,7 +20,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(main)
-
+        Toast.makeText(this, "Johann Universal Controller for 1.0", Toast.LENGTH_LONG).show()
         // 2. HUBUNGKAN VARIABEL DENGAN ID DI XML
         val ascendBut: SwitchCompat = findViewById(R.id.Ascend)
         val hoverBut: SwitchCompat = findViewById(R.id.Hover)
