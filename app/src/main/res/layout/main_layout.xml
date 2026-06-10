@@ -32,10 +32,11 @@
             android:gravity="center"
             android:rotation="90"
             android:thumbTint="#FFFFFF"
+            android:thumbTintMode="multiply"
             android:trackTint="#B0B0B0"
             android:trackTintMode="src_in"
             android:scaleX="2"
-            android:scaleY="2"
+            android:scaleY="2.225"
             android:textOff=""
             android:textOn=""
             app:layout_constraintLeft_toLeftOf="@id/logo"
@@ -44,60 +45,88 @@
             app:showText="false"
             ></Switch>
 
-        <androidx.appcompat.widget.SwitchCompat
+        <Switch
             android:id="@+id/Hover"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:gravity="center"
             android:rotation="90"
-            android:thumb="@drawable/custom_switch_thub"
+            android:thumbTint="#FFFFFF"
+            android:thumbTintMode="multiply"
+            android:trackTint="#B0B0B0"
+            android:trackTintMode="src_in"
+            android:scaleX="2"
+            android:scaleY="2.225"
+            android:textOff=""
+            android:textOn=""
             app:layout_constraintRight_toLeftOf="@id/Ascend"
             app:layout_constraintTop_toBottomOf="@id/logo"
             app:showText="false"
-            app:track="@drawable/custom_switch_off"></androidx.appcompat.widget.SwitchCompat>
+            ></Switch>
 
-        <androidx.appcompat.widget.SwitchCompat
+        <Switch
             android:id="@+id/Descend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:gravity="center"
             android:rotation="90"
-            android:thumb="@drawable/custom_switch_thub"
+            android:thumbTint="#FFFFFF"
+            android:thumbTintMode="multiply"
+            android:trackTint="#B0B0B0"
+            android:trackTintMode="src_in"
+            android:scaleX="2"
+            android:scaleY="2.225"
+            android:textOff=""
+            android:textOn=""
             app:layout_constraintRight_toLeftOf="@id/Hover"
             app:layout_constraintTop_toBottomOf="@id/logo"
             app:showText="false"
-            app:track="@drawable/custom_switch_off">
+            >
 
-        </androidx.appcompat.widget.SwitchCompat>
+        </Switch>
 
-        <androidx.appcompat.widget.SwitchCompat
+        <Switch
             android:id="@+id/ConnectBLE"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:gravity="center"
             android:rotation="90"
-            android:thumb="@drawable/custom_switch_thub"
+            android:thumbTint="#FFFFFF"
+            android:thumbTintMode="multiply"
+            android:trackTint="#B0B0B0"
+            android:trackTintMode="src_in"
+            android:scaleX="2"
+            android:scaleY="2.225"
+            android:textOff=""
+            android:textOn=""
             app:layout_constraintBottom_toTopOf="@id/logo"
             app:layout_constraintLeft_toLeftOf="@id/logo"
             app:layout_constraintRight_toRightOf="@id/logo"
             app:showText="false"
-            app:track="@drawable/custom_switch_off"></androidx.appcompat.widget.SwitchCompat>
+            ></Switch>
 
-        <androidx.appcompat.widget.SwitchCompat
+        <Switch
             android:id="@+id/RecVideo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:gravity="center"
             android:rotation="90"
-            android:thumb="@drawable/custom_switch_thub"
+            android:thumbTint="#FFFFFF"
+            android:thumbTintMode="multiply"
+            android:trackTint="#B0B0B0"
+            android:trackTintMode="src_in"
+            android:scaleX="2"
+            android:scaleY="2.225"
+            android:textOff=""
+            android:textOn=""
             app:layout_constraintBottom_toTopOf="@id/logo"
             app:layout_constraintRight_toLeftOf="@id/ConnectBLE"
             app:showText="false"
-            app:track="@drawable/custom_switch_off"></androidx.appcompat.widget.SwitchCompat>
+            ></Switch>
 
 
         <SeekBar
