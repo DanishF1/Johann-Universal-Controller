@@ -1,5 +1,6 @@
 package com.example.johannuniversalcontroller
 
+import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import android.widget.SeekBar
 import android.widget.Toast
@@ -19,6 +20,9 @@ import kotlinx.coroutines.isActive
 import androidx.lifecycle.lifecycleScope
 import android.view.View
 import android.widget.Switch
+import android. widget. TextView
+import androidx.compose.animation.core.estimateAnimationDurationMillis
+import androidx.compose.runtime.withFrameMillis
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,12 +36,13 @@ var switchsJob1: Job? = null
 var switchsJob2: Job? = null
 var switchsJob3: Job? = null
 var seeksJob: Job? = null
+var BLE: Job? = null
+var connected: Boolean = false
 
 class MainActivity : ComponentActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var lastTimeBut: Long = 0L
     private var lastTimeBar: Long = 0L
-
     override fun onCreate(savedInstanceState: Bundle?) {
         // 1. PASANG LAYOUT KE LAYAR TERLEBIH DAHULU (Wajib di Paling Atas)
         super.onCreate(savedInstanceState)
@@ -48,15 +53,6 @@ class MainActivity : ComponentActivity() {
             controller.hide(WindowInsetsCompat.Type.systemBars())
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
-
-
-        // 2. HUBUNGKAN VARIABEL DENGAN ID DI XML
-
-        // Fungsi untuk mengatur logika saling silang (Toggle) pada tombol
-
-
-        // Fungsi untuk membaca pergeseran Slider Ketinggian
-
 
         initializing = true
         controlling()
@@ -100,6 +96,7 @@ class MainActivity : ComponentActivity() {
         val ascendBut: Switch = findViewById(R.id.Ascend)
         val hoverBut: Switch = findViewById(R.id.Hover)
         val descendBut: Switch = findViewById(R.id.Descend)
+        val ConnectToBle: Switch = findViewById(R.id.ConnectBLE)
         val altitudeSeek: SeekBar = findViewById(R.id.altitude) // Panggil SeekBar di sini
 
         hoverBut.setOnCheckedChangeListener { _, isChecked ->
@@ -175,6 +172,23 @@ class MainActivity : ComponentActivity() {
                     altitudeSeek.isEnabled = true // HIDUPKAN LAGI SEEKBAR
                 }
                 Log.d("DebugSwitch", "$isButtonActive")
+            }
+        }
+
+        ConnectToBle.setOnCheckedChangeListener { _, isChecked ->
+            if(isChecked && !connected){
+                //connect
+                BLE = lifecycleScope.launch(Dispatchers.IO) {
+                    while(isChecked && !connected){
+                        Log.d(BLname, "Searching BLE Connection..."); delay(500)
+                        //masukin kodingannya
+                    }
+                }
+            }else if(isChecked && connected){
+                BLE?.cancel()
+                //homemade rotation toast
+            }else {
+                BLE?.cancel()
             }
         }
     }
