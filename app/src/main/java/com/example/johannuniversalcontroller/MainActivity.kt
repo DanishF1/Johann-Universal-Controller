@@ -20,7 +20,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 val main = R.layout.main_layout
-val BLname: String = "Johann 1.0"
+const val BLname: String = "Johann 1.0"
 var isButtonActive: Boolean = false
 var initializing: Boolean = false
 var altitudeValue: Float = 0.0f
@@ -51,12 +51,16 @@ class MainActivity : ComponentActivity() {
 
     private fun altitude() {
         val altitudeSeek: SeekBar = findViewById(R.id.altitude)
-
+        val calc: TextView = findViewById(R.id.percentage)
+        var forcalc: Int = 0
         altitudeSeek.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 // HANYA MENGAMBIL NILAI. Jangan pernah taruh lifecycleScope.launch(while..) di sini!
                 if(fromUser && !isButtonActive) {
                     altitudeValue = (progress + 1).toFloat()
+                    forcalc = progress
+                    forcalc.toInt()
+                    calc.setText("$forcalc%")
                     Log.d("SeekBar $BLname", "Altitude: $altitudeValue")
                 }
             }
