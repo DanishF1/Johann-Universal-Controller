@@ -1,50 +1,37 @@
 package com.example.johannuniversalcontroller
 
-import android.bluetooth.BluetoothDevice
 import android.os.Bundle
 import android.widget.SeekBar
-import android.widget.Toast
+import android.widget.Switch
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.widget.SwitchCompat
-import androidx. core. view. WindowInsetsControllerCompat
-import androidx. core. view. WindowInsetsCompat
-import androidx. core. view. WindowCompat
-import android. util. Log
-import android.os.Handler
-import android.os.Looper
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowCompat
+import android.util.Log
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
 import androidx.lifecycle.lifecycleScope
-import android.view.View
-import android.widget.Switch
-import android. widget. TextView
-import androidx.compose.animation.core.estimateAnimationDurationMillis
-import androidx.compose.runtime.withFrameMillis
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 val main = R.layout.main_layout
 val BLname: String = "Johann 1.0"
 var isButtonActive: Boolean = false
 var initializing: Boolean = false
 var altitudeValue: Float = 0.0f
+
 var switchsJob1: Job? = null
 var switchsJob2: Job? = null
 var switchsJob3: Job? = null
-var seeksJob: Job? = null
 var BLE: Job? = null
 var connected: Boolean = false
 
 class MainActivity : ComponentActivity() {
-    private val handler = Handler(Looper.getMainLooper())
-    private var lastTimeBut: Long = 0L
-    private var lastTimeBar: Long = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        // 1. PASANG LAYOUT KE LAYAR TERLEBIH DAHULU (Wajib di Paling Atas)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(main)
@@ -58,38 +45,21 @@ class MainActivity : ComponentActivity() {
         controlling()
         altitude()
     }
+
     private fun altitude() {
-                val altitudeSeek: SeekBar = findViewById(R.id.altitude)
-                if(!isButtonActive){
-                    altitudeSeek.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
-                        override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                            // Update nilai hanya jika tombol teks tidak sedang aktif
-                            if(!isButtonActive) {
-                                altitudeValue = (progress + 1).toFloat()
-                                seeksJob = lifecycleScope.launch(Dispatchers.IO) {
-                                    while (altitudeValue > 1f) {
-                                        Log.d(
-                                            "SeekBar " + BLname,
-                                            "Altitude: $altitudeValue"
-                                        );delay(100)
+        val altitudeSeek: SeekBar = findViewById(R.id.altitude)
 
-                                    }
-                                }
-                            }else{
-                                seeksJob?.cancel()
-
-                            }
-
-                        }
-
-                        override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                           //-
-                        }
-                        override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                            //-
-                        }
-                    })
+        altitudeSeek.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                // HANYA MENGAMBIL NILAI. Jangan pernah taruh lifecycleScope.launch(while..) di sini!
+                if(fromUser && !isButtonActive) {
+                    altitudeValue = (progress + 1).toFloat()
+                    Log.d("SeekBar $BLname", "Altitude: $altitudeValue")
                 }
+            }
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+        })
     }
 
     private fun controlling() {
@@ -97,105 +67,134 @@ class MainActivity : ComponentActivity() {
         val hoverBut: Switch = findViewById(R.id.Hover)
         val descendBut: Switch = findViewById(R.id.Descend)
         val ConnectToBle: Switch = findViewById(R.id.ConnectBLE)
-        val altitudeSeek: SeekBar = findViewById(R.id.altitude) // Panggil SeekBar di sini
+        val altitudeSeek: SeekBar = findViewById(R.id.altitude)
 
+        // Panggil Custom Toast mu di sini agar siap dipakai
+        val customToast: TextView = findViewById(R.id.newtoast)
+        customToast.alpha = 0f
+        fun customToast(){
+            customToast.animate().alpha(1f).setDuration(500).start()
+            customToast.animate().alpha(1f).setDuration(500).cancel()
+
+
+        }
+
+        // ==========================================
+        // LOGIKA HOVER
+        // ==========================================
         hoverBut.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 ascendBut.isChecked = false
                 descendBut.isChecked = false
                 isButtonActive = true
-
-                // INSTAN MATIKAN SEEKBAR SAAT TOMBOL NYALA
                 altitudeSeek.isEnabled = false
 
+                // MANIPULASI UI (Harus di luar IO Thread)
+                customToast.text = "Hovering!"
+                customToast.animate().alpha(1f).setDuration(300).start() // Fade-in animasi selama 0.3 detik
+
+                // LOGIKA PENGIRIMAN DATA (Di dalam IO Thread)
                 switchsJob1 = lifecycleScope.launch(Dispatchers.IO) {
                     while(isActive){
-                        Log.d(BLname, "Hover Button is Active"); delay(100)
+                        Log.d(BLname, "Hover Button is Active")
+                        delay(100)
                     }
                 }
             } else {
                 switchsJob1?.cancel()
 
-                // Cek apakah semua tombol benar-benar mati
+                // Hilangkan Toast secara perlahan
+                customToast.animate().alpha(0f).setDuration(300).start()
+
                 if (!ascendBut.isChecked && !descendBut.isChecked) {
                     isButtonActive = false
-                    altitudeSeek.isEnabled = true // HIDUPKAN LAGI SEEKBAR
+                    altitudeSeek.isEnabled = true
                 }
-                Log.d("DebugSwitch", "$isButtonActive")
             }
         }
 
+        // ==========================================
+        // LOGIKA ASCEND
+        // ==========================================
         ascendBut.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 hoverBut.isChecked = false
                 descendBut.isChecked = false
                 isButtonActive = true
-
-                // INSTAN MATIKAN SEEKBAR
                 altitudeSeek.isEnabled = false
+
+                customToast.text = "Ascending!"
+                customToast.animate().alpha(1f).setDuration(300).start()
 
                 switchsJob2 = lifecycleScope.launch(Dispatchers.IO) {
                     while(isActive){
-                        Log.d(BLname, "Ascend Button is Active"); delay(100)
+                        Log.d(BLname, "Ascend Button is Active")
+                        delay(100)
                     }
                 }
             } else {
                 switchsJob2?.cancel()
+                customToast.animate().alpha(0f).setDuration(300).start()
 
                 if (!hoverBut.isChecked && !descendBut.isChecked) {
                     isButtonActive = false
-                    altitudeSeek.isEnabled = true // HIDUPKAN LAGI SEEKBAR
+                    altitudeSeek.isEnabled = true
                 }
-                Log.d("DebugSwitch", "$isButtonActive")
             }
         }
 
+        // ==========================================
+        // LOGIKA DESCEND
+        // ==========================================
         descendBut.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 hoverBut.isChecked = false
                 ascendBut.isChecked = false
                 isButtonActive = true
-
-                // INSTAN MATIKAN SEEKBAR
                 altitudeSeek.isEnabled = false
+
+                customToast.text = "Descending!"
+                customToast.animate().alpha(1f).setDuration(300).start()
 
                 switchsJob3 = lifecycleScope.launch(Dispatchers.IO) {
                     while(isActive){
-                        Log.d(BLname, "Descend Button is Active"); delay(100)
+                        Log.d(BLname, "Descend Button is Active")
+                        delay(100)
                     }
                 }
             } else {
                 switchsJob3?.cancel()
+                customToast.animate().alpha(0f).setDuration(300).start()
 
                 if (!hoverBut.isChecked && !ascendBut.isChecked) {
                     isButtonActive = false
-                    altitudeSeek.isEnabled = true // HIDUPKAN LAGI SEEKBAR
+                    altitudeSeek.isEnabled = true
                 }
-                Log.d("DebugSwitch", "$isButtonActive")
             }
         }
 
+        // ==========================================
+        // LOGIKA BLE
+        // ==========================================
         ConnectToBle.setOnCheckedChangeListener { _, isChecked ->
             if(isChecked && !connected){
-                //connect
+                customToast.text = "Searching BLE..."
+                customToast.animate().alpha(1f).setDuration(300).start()
+
                 BLE = lifecycleScope.launch(Dispatchers.IO) {
-                    while(isChecked && !connected){
-                        Log.d(BLname, "Searching BLE Connection..."); delay(500)
-                        //masukin kodingannya
+                    while(isActive && !connected){
+                        Log.d(BLname, "Searching BLE Connection...")
+                        delay(500)
                     }
                 }
-            }else if(isChecked && connected){
+            } else if (!isChecked) {
                 BLE?.cancel()
-                //homemade rotation toast
-            }else {
-                BLE?.cancel()
+                customToast.animate().alpha(0f).setDuration(300).start()
+                Log.d(BLname, "BLE Search Cancelled")
             }
         }
     }
-    override fun onStart() {
-        super.onStart()
 
-    }
     override fun onPause() {
         super.onPause()
         initializing = false
