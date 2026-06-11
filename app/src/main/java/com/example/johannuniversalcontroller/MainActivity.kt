@@ -1,28 +1,31 @@
 package com.example.johannuniversalcontroller
 
 import android.os.Bundle
+import android.util.Log
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
-import androidx.core.view.WindowInsetsControllerCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowCompat
-import android.util.Log
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.isActive
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 val main = R.layout.main_layout
 val BLname: String = "Johann 1.0"
 var isButtonActive: Boolean = false
 var initializing: Boolean = false
 var altitudeValue: Float = 0.0f
-
+var millis1: Long = 0L
+var breakout1: Long = 0L
 var switchsJob1: Job? = null
 var switchsJob2: Job? = null
 var switchsJob3: Job? = null
@@ -84,14 +87,20 @@ class MainActivity : ComponentActivity() {
         // ==========================================
         hoverBut.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
+                breakout1 = System.currentTimeMillis()
                 ascendBut.isChecked = false
                 descendBut.isChecked = false
                 isButtonActive = true
                 altitudeSeek.isEnabled = false
 
-                // MANIPULASI UI (Harus di luar IO Thread)
                 customToast.text = "Hovering!"
-                customToast.animate().alpha(1f).setDuration(300).start() // Fade-in animasi selama 0.3 detik
+                customToast.animate().alpha(1f).setDuration(700)
+                    .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
+                        override fun run() {
+                            customToast.animate().alpha(0f).setDuration(700)
+                                .setInterpolator(AccelerateInterpolator()).start()
+                        }
+                    }).start()
 
                 // LOGIKA PENGIRIMAN DATA (Di dalam IO Thread)
                 switchsJob1 = lifecycleScope.launch(Dispatchers.IO) {
@@ -102,10 +111,6 @@ class MainActivity : ComponentActivity() {
                 }
             } else {
                 switchsJob1?.cancel()
-
-                // Hilangkan Toast secara perlahan
-                customToast.animate().alpha(0f).setDuration(300).start()
-
                 if (!ascendBut.isChecked && !descendBut.isChecked) {
                     isButtonActive = false
                     altitudeSeek.isEnabled = true
@@ -124,7 +129,13 @@ class MainActivity : ComponentActivity() {
                 altitudeSeek.isEnabled = false
 
                 customToast.text = "Ascending!"
-                customToast.animate().alpha(1f).setDuration(300).start()
+                customToast.animate().alpha(1f).setDuration(700)
+                    .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
+                        override fun run() {
+                            customToast.animate().alpha(0f).setDuration(700)
+                                .setInterpolator(AccelerateInterpolator()).start()
+                        }
+                    }).start()
 
                 switchsJob2 = lifecycleScope.launch(Dispatchers.IO) {
                     while(isActive){
@@ -134,8 +145,6 @@ class MainActivity : ComponentActivity() {
                 }
             } else {
                 switchsJob2?.cancel()
-                customToast.animate().alpha(0f).setDuration(300).start()
-
                 if (!hoverBut.isChecked && !descendBut.isChecked) {
                     isButtonActive = false
                     altitudeSeek.isEnabled = true
@@ -154,7 +163,13 @@ class MainActivity : ComponentActivity() {
                 altitudeSeek.isEnabled = false
 
                 customToast.text = "Descending!"
-                customToast.animate().alpha(1f).setDuration(300).start()
+                customToast.animate().alpha(1f).setDuration(700)
+                    .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
+                        override fun run() {
+                            customToast.animate().alpha(0f).setDuration(700)
+                                .setInterpolator(AccelerateInterpolator()).start()
+                        }
+                    }).start()
 
                 switchsJob3 = lifecycleScope.launch(Dispatchers.IO) {
                     while(isActive){
@@ -164,8 +179,6 @@ class MainActivity : ComponentActivity() {
                 }
             } else {
                 switchsJob3?.cancel()
-                customToast.animate().alpha(0f).setDuration(300).start()
-
                 if (!hoverBut.isChecked && !ascendBut.isChecked) {
                     isButtonActive = false
                     altitudeSeek.isEnabled = true
@@ -178,8 +191,14 @@ class MainActivity : ComponentActivity() {
         // ==========================================
         ConnectToBle.setOnCheckedChangeListener { _, isChecked ->
             if(isChecked && !connected){
-                customToast.text = "Searching BLE..."
-                customToast.animate().alpha(1f).setDuration(300).start()
+                customToast.text = "Searching Johann's Bluetooth"
+                customToast.animate().alpha(1f).setDuration(1500)
+                    .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
+                        override fun run() {
+                            customToast.animate().alpha(0f).setDuration(1500)
+                                .setInterpolator(AccelerateInterpolator()).start()
+                        }
+                    }).start()
 
                 BLE = lifecycleScope.launch(Dispatchers.IO) {
                     while(isActive && !connected){
@@ -187,10 +206,26 @@ class MainActivity : ComponentActivity() {
                         delay(500)
                     }
                 }
-            } else if (!isChecked) {
+            } else if (!isChecked && connected) {
                 BLE?.cancel()
-                customToast.animate().alpha(0f).setDuration(300).start()
-                Log.d(BLname, "BLE Search Cancelled")
+                customToast.text = "Already Connected to Johann"
+                customToast.animate().alpha(1f).setDuration(700)
+                    .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
+                        override fun run() {
+                            customToast.animate().alpha(0f).setDuration(700)
+                                .setInterpolator(AccelerateInterpolator()).start()
+                        }
+                    }).start()
+                Log.d(BLname, "Connected")
+            }else if(isChecked && connected){
+                customToast.text = "Connected to Johann"
+                customToast.animate().alpha(1f).setDuration(700)
+                    .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
+                        override fun run() {
+                            customToast.animate().alpha(0f).setDuration(700)
+                                .setInterpolator(AccelerateInterpolator()).start()
+                        }
+                    }).start()
             }
         }
     }

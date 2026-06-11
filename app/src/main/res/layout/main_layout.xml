@@ -237,7 +237,7 @@
             android:rotation="90"
             android:textColor="@color/white"
             android:text="Bluetooth connected to Johann1.0"
-            android:textSize="26px"
+            android:textSize="36px"
             android:textAlignment="center"
             android:alpha="0"
             app:layout_constraintLeft_toLeftOf="parent"
