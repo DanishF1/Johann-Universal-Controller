@@ -1,5 +1,11 @@
 package com.example.johannuniversalcontroller
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.bluetooth.*
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.animation.AccelerateInterpolator
@@ -9,6 +15,8 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -18,6 +26,16 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.UUID
+
+
+val SERVICE_UUID: UUID = UUID.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b")
+val CHAR_UUID: UUID = UUID.fromString("beb5483e-36e1-4688-b7f5-ea07361b26a8")
+
+var bluetoothAdapter: BluetoothAdapter? = null
+var bluetoothGatt: BluetoothGatt? = null
+var bleCharacteristic: BluetoothGattCharacteristic? = null
+
 
 val main = R.layout.main_layout
 const val BLname: String = "Johann 1.0"
@@ -30,7 +48,9 @@ var switchsJob1: Job? = null
 var switchsJob2: Job? = null
 var switchsJob3: Job? = null
 var BLE: Job? = null
+var heartbeat: Job? = null
 var connected: Boolean = false
+var timelimitBL: Job? = null
 
 class MainActivity : ComponentActivity() {
 
@@ -41,26 +61,25 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
-            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
-
+        cekDanMintaIzinBLE()
         initializing = true
         controlling()
         altitude()
+
     }
 
     private fun altitude() {
         val altitudeSeek: SeekBar = findViewById(R.id.altitude)
         val calc: TextView = findViewById(R.id.percentage)
-        var forcalc: Int = 0
+        var forcalc: Float = 0f
         altitudeSeek.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                // HANYA MENGAMBIL NILAI. Jangan pernah taruh lifecycleScope.launch(while..) di sini!
                 if(fromUser && !isButtonActive) {
-                    altitudeValue = (progress + 1).toFloat()
-                    forcalc = progress
-                    forcalc.toInt()
-                    calc.setText("$forcalc%")
+                    altitudeValue = progress.toFloat()
+                    calc.setText("$altitudeValue%")
                     Log.d("SeekBar $BLname", "Altitude: $altitudeValue")
                 }
             }
@@ -75,20 +94,10 @@ class MainActivity : ComponentActivity() {
         val descendBut: Switch = findViewById(R.id.Descend)
         val ConnectToBle: Switch = findViewById(R.id.ConnectBLE)
         val altitudeSeek: SeekBar = findViewById(R.id.altitude)
-
-        // Panggil Custom Toast mu di sini agar siap dipakai
         val customToast: TextView = findViewById(R.id.newtoast)
+        var customBle: Boolean = false
         customToast.alpha = 0f
-        fun customToast(){
-            customToast.animate().alpha(1f).setDuration(500).start()
-            customToast.animate().alpha(1f).setDuration(500).cancel()
 
-
-        }
-
-        // ==========================================
-        // LOGIKA HOVER
-        // ==========================================
         hoverBut.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 breakout1 = System.currentTimeMillis()
@@ -106,15 +115,16 @@ class MainActivity : ComponentActivity() {
                         }
                     }).start()
 
-                // LOGIKA PENGIRIMAN DATA (Di dalam IO Thread)
                 switchsJob1 = lifecycleScope.launch(Dispatchers.IO) {
                     while(isActive){
                         Log.d(BLname, "Hover Button is Active")
+                        kirimPerintah("HOVER")
                         delay(100)
                     }
                 }
             } else {
                 switchsJob1?.cancel()
+                kirimPerintah("STOP_HOVER")
                 if (!ascendBut.isChecked && !descendBut.isChecked) {
                     isButtonActive = false
                     altitudeSeek.isEnabled = true
@@ -122,9 +132,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // ==========================================
-        // LOGIKA ASCEND
-        // ==========================================
         ascendBut.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 hoverBut.isChecked = false
@@ -156,9 +163,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // ==========================================
-        // LOGIKA DESCEND
-        // ==========================================
         descendBut.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 hoverBut.isChecked = false
@@ -190,9 +194,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // ==========================================
-        // LOGIKA BLE
-        // ==========================================
         ConnectToBle.setOnCheckedChangeListener { _, isChecked ->
             if(isChecked && !connected){
                 customToast.text = "Searching Johann's Bluetooth"
@@ -207,11 +208,16 @@ class MainActivity : ComponentActivity() {
                 BLE = lifecycleScope.launch(Dispatchers.IO) {
                     while(isActive && !connected){
                         Log.d(BLname, "Searching BLE Connection...")
-                        delay(500)
+                        mulaiScanBLE()
+                        delay(100)
+
                     }
                 }
             } else if (!isChecked && connected) {
                 BLE?.cancel()
+                customBle = true
+                ConnectToBle.isChecked = true
+                ConnectToBle.isEnabled = false
                 customToast.text = "Already Connected to Johann"
                 customToast.animate().alpha(1f).setDuration(700)
                     .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
@@ -223,6 +229,7 @@ class MainActivity : ComponentActivity() {
                 Log.d(BLname, "Connected")
             }else if(isChecked && connected){
                 customToast.text = "Connected to Johann"
+                ConnectToBle.isEnabled = false
                 customToast.animate().alpha(1f).setDuration(700)
                     .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
                         override fun run() {
@@ -230,13 +237,120 @@ class MainActivity : ComponentActivity() {
                                 .setInterpolator(AccelerateInterpolator()).start()
                         }
                     }).start()
+            }else if (!connected && !isChecked){
+                ConnectToBle.isChecked = false
+
+            }
+
+            if(connected && !hoverBut.isChecked && !ascendBut.isChecked && !descendBut.isChecked){
+                heartbeat = lifecycleScope.launch(Dispatchers.IO){
+                    while(isActive){
+                        kirimPerintah("A")
+                        delay(2000)
+                    }
+                }
+                }else{
+                heartbeat = null
             }
         }
     }
 
+    @SuppressLint("MissingPermission")
+    private fun mulaiScanBLE() {
+        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        bluetoothAdapter = bluetoothManager.adapter
+        val scanner = bluetoothAdapter?.bluetoothLeScanner
+
+        Log.d(BLname, "Menyalakan Radar BLE...")
+
+        // Ini adalah "Mata" radar untuk melihat perangkat di sekitar
+        val scanCallback = object : android.bluetooth.le.ScanCallback() {
+            override fun onScanResult(callbackType: Int, result: android.bluetooth.le.ScanResult?) {
+                val device = result?.device
+
+                // Jika nama yang terdeteksi cocok dengan ESP32-mu
+                if (device?.name == "Johann 1.0") {
+                    Log.d(BLname, "Ketemu Johann! Mematikan radar & mulai menyambung...")
+                    scanner?.stopScan(this) // Matikan radar biar hemat baterai
+                    sambungkanKeGATT(device)
+
+                }
+            }
+        }
+        scanner?.startScan(scanCallback)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun sambungkanKeGATT(device: BluetoothDevice) {
+        bluetoothGatt = device.connectGatt(this, false, object : BluetoothGattCallback() {
+            // 1. Mengecek apakah jembatan koneksi berhasil terbentuk
+            override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+                if (newState == BluetoothProfile.STATE_CONNECTED) {
+                    Log.d(BLname, "Jembatan Terhubung! Mencari laci data (Service)...")
+                    connected = true
+                    gatt?.discoverServices() // Cari Service UUID
+                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                    Log.d(BLname, "Jembatan Terputus!")
+                    connected = false
+                }
+            }
+
+            // 2. Mengecek apakah Laci Data (UUID) yang dicari ketemu
+            override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    val service = gatt?.getService(SERVICE_UUID)
+                    bleCharacteristic = service?.getCharacteristic(CHAR_UUID)
+                    Log.d(BLname, "Johann SIAP DITERBANGKAN!")
+                    connected = true
+                }
+            }
+        })
+    }
+
+    // Fungsi ini yang nanti akan kamu panggil dari dalam tombol-tombolmu
+    @SuppressLint("MissingPermission")
+    private fun kirimPerintah(perintah: String) {
+        if (connected && bleCharacteristic != null && bluetoothGatt != null) {
+            bleCharacteristic?.value = perintah.toByteArray()
+            bluetoothGatt?.writeCharacteristic(bleCharacteristic)
+        }
+    }
+    private fun removeBond(device: BluetoothDevice) {
+        try {
+            device::class.java.getMethod("removeBond").invoke(device)
+        } catch (e: Exception) {
+            Log.e("TAG", "Removing bond has been failed. ${e.message}")
+        }
+    }
     override fun onPause() {
         super.onPause()
         initializing = false
+    }
+
+    private fun cekDanMintaIzinBLE() {
+        // Bedakan izin untuk HP Android baru (12+) dan HP lama
+        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        } else {
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        }
+
+        // Cek izin mana saja yang belum disetujui pengguna
+        val belumDiizinkan = permissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        // Jika ada yang belum diizinkan, munculkan pop-up!
+        if (belumDiizinkan.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, belumDiizinkan.toTypedArray(), 1)
+        }
     }
 
     override fun onDestroy() {

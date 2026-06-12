@@ -3,9 +3,10 @@
 
     <item android:id="@android:id/background">
         <shape>
-            <corners android:radius="10dp" />
+            <corners android:radius="10000dp" />
             <solid android:color="@color/seekbar_track_inactive" />
-            <size android:height="6dp" />
+            <size android:height="6dp"
+                android:width="10dp"/>
         </shape>
     </item>
 

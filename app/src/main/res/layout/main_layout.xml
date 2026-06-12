@@ -139,13 +139,14 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="155dp"
             android:progressDrawable="@drawable/custom_seekbar_track"
-
+            android:scaleX="1"
+            android:scaleY="1.2"
             android:splitTrack="false"
 
             android:thumb="@drawable/custom_seekbar_thumb"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/Descend"
-            app:layout_goneMarginBottom="10dp">
+            android:layout_marginBottom="51dp">
 
         </SeekBar>
 
@@ -247,7 +248,7 @@
             ></TextView>
 
         <TextView
-            android:layout_width="95px"
+            android:layout_width="125px"
             android:layout_height="wrap_content"
             app:layout_constraintRight_toRightOf="@id/altitude"
             android:rotation="90"
