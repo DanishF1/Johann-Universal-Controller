@@ -220,7 +220,7 @@
             android:layout_marginBottom="85dp"
             android:fontFamily="@font/poppins_regular"
             android:rotation="90"
-            android:text="Rec Video (TBA)"
+            android:text="Disconnect BLE"
             android:textColor="@color/white"
             android:textSize="40px"
             app:layout_constraintBottom_toTopOf="@id/RecVideo"

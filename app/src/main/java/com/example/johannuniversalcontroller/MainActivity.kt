@@ -75,6 +75,7 @@ class MainActivity : ComponentActivity() {
             controller.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
+        Log.d("OHOHOH", "SWEET")
         cekDanMintaIzinBLE()
         initializing = true
         controlling()
@@ -87,9 +88,11 @@ class MainActivity : ComponentActivity() {
         val calc: TextView = findViewById(R.id.percentage)
         var forcalc: Float = 0f
         altitudeSeek.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
+
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if(fromUser && !isButtonActive) {
                     altitudeValue = progress.toFloat()
+                    kirimPerintah((altitudeValue/100).toString())
                     calc.setText("$altitudeValue%")
                     Log.d("SeekBar $BLname", "Altitude: $altitudeValue")
                 }
@@ -104,6 +107,7 @@ class MainActivity : ComponentActivity() {
         val hoverBut: Switch = findViewById(R.id.Hover)
         val descendBut: Switch = findViewById(R.id.Descend)
         val ConnectToBle: Switch = findViewById(R.id.ConnectBLE)
+        val RecVi: Switch = findViewById(R.id.RecVideo)
         val altitudeSeek: SeekBar = findViewById(R.id.altitude)
         val customToast: TextView = findViewById(R.id.newtoast)
         var customBle: Boolean = false
@@ -163,6 +167,7 @@ class MainActivity : ComponentActivity() {
                     while(isActive){
                         Log.d(BLname, "Ascend Button is Active")
                         delay(100)
+                        kirimPerintah("ASCEND")
                     }
                 }
             } else {
@@ -194,6 +199,7 @@ class MainActivity : ComponentActivity() {
                     while(isActive){
                         Log.d(BLname, "Descend Button is Active")
                         delay(100)
+                        kirimPerintah("DESCEND")
                     }
                 }
             } else {
@@ -206,69 +212,126 @@ class MainActivity : ComponentActivity() {
         }
 
         ConnectToBle.setOnCheckedChangeListener { _, isChecked ->
-            if(isChecked && !connected){
+
+            // 1. KONDISI: MAU MENYAMBUNGKAN (AWAL)
+            if (isChecked && !connected) {
+                // Tampilkan Animasi Mencari
+                tembakLangsungKeJohann()
                 customToast.text = "Searching Johann's Bluetooth"
                 customToast.animate().alpha(1f).setDuration(1500)
-                    .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
-                        override fun run() {
-                            customToast.animate().alpha(0f).setDuration(1500)
-                                .setInterpolator(AccelerateInterpolator()).start()
-                        }
-                    }).start()
+                    .setInterpolator(DecelerateInterpolator()).withEndAction {
+                        customToast.animate().alpha(0f).setDuration(1500)
+                            .setInterpolator(AccelerateInterpolator()).start()
+                    }.start()
 
                 BLE = lifecycleScope.launch(Dispatchers.IO) {
-                    while(isActive && !connected){
-                        millis1 = SystemClock.elapsedRealtime()
-                        Log.d(BLname, "Searching BLE Connection...")
-                        tembakLangsungKeJohann()
-                        delay(2000)
-                        if (!connected && millis1 - millis2 > 10000) {
+                    // A. Tembak pencarian SATU KALI SAJA (Jangan ditaruh di dalam while)
+                    Log.d(BLname, "Menyalakan Radar / Menembak MAC Address...")
+                    mulaiScanBLE() // Memulai pencarian
+
+                    val waktuMulai = SystemClock.elapsedRealtime()
+
+                    // B. Loop ini HANYA untuk menunggu hasil (Koneksi atau Timeout)
+                    while (isActive && !connected) {
+                        delay(1000) // Santai, cek setiap 1 detik
+                        val waktuSekarang = SystemClock.elapsedRealtime()
+
+                        // Jika sudah 30 detik (30.000 ms) dan tetap gagal
+                        if (waktuSekarang - waktuMulai >= 30000) {
+                            Log.d("SWEET", "CONNECTION NOT FOUND!! Timeout 30 detik.")
                             removeBond(johannDevice)
 
-                            tembakLangsungKeJohann()
-                        }
+                            // Gunakan withContext(Main) karena mengubah UI (Toast/Switch) harus dari depan
+                            kotlinx.coroutines.withContext(Dispatchers.Main) {
+                                customToast.text = "Connection Timeout!"
+                                customToast.animate().alpha(1f).setDuration(1500).withEndAction {
+                                    customToast.animate().alpha(0f).setDuration(1500).start()
+                                }.start()
 
+                                ConnectToBle.isChecked = false // Matikan Switch otomatis
+                            }
+                            break // Keluar dari loop pencarian
+                        }
+                    }
+
+                    // C. Jika loop berhenti karena berhasil nyambung (connected == true)
+                    if (connected) {
+                        kotlinx.coroutines.withContext(Dispatchers.Main) {
+                            customToast.text = "Connected to Johann!"
+                            customToast.animate().alpha(1f).setDuration(700).withEndAction {
+                                customToast.animate().alpha(0f).setDuration(700).start()
+                            }.start()
+                            connected = true
+                            // Mulai Heartbeat otomatis saat berhasil connect
+                            mulaiHeartbeat(hoverBut, ascendBut, descendBut)
+                        }
                     }
                 }
-            } else if (!isChecked && connected) {
-                BLE?.cancel()
-                customBle = true
-                ConnectToBle.isChecked = true
-                ConnectToBle.isEnabled = false
+            }
+
+            else if (isChecked && connected) {
+                ConnectToBle.isEnabled = false // Bekukan tombol sementara
                 customToast.text = "Already Connected to Johann"
-                customToast.animate().alpha(1f).setDuration(700)
-                    .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
-                        override fun run() {
-                            customToast.animate().alpha(0f).setDuration(700)
-                                .setInterpolator(AccelerateInterpolator()).start()
-                        }
-                    }).start()
-                Log.d(BLname, "Connected")
-            }else if(isChecked && connected){
-                customToast.text = "Connected to Johann"
-                ConnectToBle.isEnabled = false
-                customToast.animate().alpha(1f).setDuration(700)
-                    .setInterpolator(DecelerateInterpolator()).withEndAction(object : Runnable {
-                        override fun run() {
-                            customToast.animate().alpha(0f).setDuration(700)
-                                .setInterpolator(AccelerateInterpolator()).start()
-                        }
-                    }).start()
-            }else if (!connected && !isChecked){
-                ConnectToBle.isChecked = false
-
+                connected = true
+                customToast.animate().alpha(1f).setDuration(700).withEndAction {
+                    customToast.animate().alpha(0f).setDuration(700).start()
+                }.start()
             }
 
-            if(connected && !hoverBut.isChecked && !ascendBut.isChecked && !descendBut.isChecked){
-                heartbeat = lifecycleScope.launch(Dispatchers.IO){
-                    while(isActive){
-                        kirimPerintah("A")
-                        delay(2000)
-                    }
+            else if (!isChecked && !connected) {
+                BLE?.cancel()
+                connected = false
+                Log.d(BLname, "Pencarian Dibatalkan.")
+            }
+
+            // (Logika pengecekan heartbeat untuk perubahan tombol dipindah ke fungsi terpisah agar bersih)
+            mulaiHeartbeat(hoverBut, ascendBut, descendBut)
+        }
+        RecVi.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                kirimPerintah("STOPBLE")
+                var m: Long = 0L
+                m = System.currentTimeMillis()
+                if (m > 1300){
+                    ConnectToBle.isChecked = false
+                    ConnectToBle.isEnabled = false
+                    disconnect()
+                    BLE?.cancel()
+                    heartbeat?.cancel() // Matikan detak jantung
+                    connected = false
+                    removeBond(johannDevice)
+                    customToast.text = "Disconnected from Johann"
+                    customToast.animate().alpha(1f).setDuration(700).withEndAction {
+                        customToast.animate().alpha(0f).setDuration(700).start()
+                    }.start()
+                    Log.d(BLname, "Disconnected Manual")
                 }
-                }else{
-                heartbeat = null
+
             }
+        }
+
+    }
+
+    private fun mulaiHeartbeat(hover: Switch, ascend: Switch, descend: Switch) {
+        // 1. Matikan paksa detak jantung lama agar tidak ada sinyal ganda (Spam)
+        heartbeat?.cancel()
+
+        // 2. Cek Syarat Mutlak: Harus sudah Connect DAN semua tombol terbang harus OFF
+        if (connected && !hover.isChecked && !ascend.isChecked && !descend.isChecked) {
+
+            // 3. Mulai detak jantung baru di jalur latar belakang
+            heartbeat = lifecycleScope.launch(Dispatchers.IO) {
+                while (isActive) {
+                    kirimPerintah("A") // Kirim sinyal "A" ke ESP32 sebagai tanda kehidupan
+                    Log.d(BLname, "Heartbeat: Sinyal 'A' terkirim")
+
+                    delay(2000) // Jeda 2 detik antar detak (2000 ms)
+                }
+            }
+
+        } else {
+            // Jika sedang tidak connect atau sedang terbang, pastikan heartbeat mati
+            heartbeat = null
         }
     }
 
@@ -312,6 +375,13 @@ class MainActivity : ComponentActivity() {
         scanner?.startScan(scanCallback)
     }
 
+    private fun disconnect() {
+        kirimPerintah("STOPBLE")
+        bluetoothGatt?.close()
+        bluetoothGatt?.close()
+        bluetoothGatt = null
+    }
+
     @SuppressLint("MissingPermission")
     private fun sambungkanKeGATT(device: BluetoothDevice) {
         bluetoothGatt = device.connectGatt(this, false, object : BluetoothGattCallback() {
@@ -319,6 +389,7 @@ class MainActivity : ComponentActivity() {
             override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
                     Log.d(BLname, "Jembatan Terhubung! Mencari laci data (Service)...")
+                    connected = true
 
                     connected = true
                     gatt?.discoverServices() // Cari Service UUID
@@ -335,10 +406,14 @@ class MainActivity : ComponentActivity() {
                     bleCharacteristic = service?.getCharacteristic(CHAR_UUID)
                     Log.d(BLname, "Johann SIAP DITERBANGKAN!")
                     connected = true
+                }else if (status == BluetoothGatt.GATT_FAILURE){
+                    connected = false
                 }
             }
         })
     }
+
+
 
     // Fungsi ini yang nanti akan kamu panggil dari dalam tombol-tombolmu
     @SuppressLint("MissingPermission")
@@ -350,6 +425,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onPause() {
         super.onPause()
+
         initializing = false
     }
 
