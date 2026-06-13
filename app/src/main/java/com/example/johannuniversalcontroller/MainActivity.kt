@@ -2,7 +2,13 @@ package com.example.johannuniversalcontroller
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.*
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -27,7 +33,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.UUID
-
+import android.os.SystemClock
 
 val SERVICE_UUID: UUID = UUID.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b")
 val CHAR_UUID: UUID = UUID.fromString("beb5483e-36e1-4688-b7f5-ea07361b26a8")
@@ -36,6 +42,8 @@ var bluetoothAdapter: BluetoothAdapter? = null
 var bluetoothGatt: BluetoothGatt? = null
 var bleCharacteristic: BluetoothGattCharacteristic? = null
 
+var B: BluetoothDevice? = null
+
 
 val main = R.layout.main_layout
 const val BLname: String = "Johann 1.0"
@@ -43,6 +51,7 @@ var isButtonActive: Boolean = false
 var initializing: Boolean = false
 var altitudeValue: Float = 0.0f
 var millis1: Long = 0L
+var millis2: Long = 0L
 var breakout1: Long = 0L
 var switchsJob1: Job? = null
 var switchsJob2: Job? = null
@@ -51,6 +60,8 @@ var BLE: Job? = null
 var heartbeat: Job? = null
 var connected: Boolean = false
 var timelimitBL: Job? = null
+var showem: Boolean = false
+var johannDevice: android.bluetooth.BluetoothDevice? = null
 
 class MainActivity : ComponentActivity() {
 
@@ -207,9 +218,15 @@ class MainActivity : ComponentActivity() {
 
                 BLE = lifecycleScope.launch(Dispatchers.IO) {
                     while(isActive && !connected){
+                        millis1 = SystemClock.elapsedRealtime()
                         Log.d(BLname, "Searching BLE Connection...")
-                        mulaiScanBLE()
-                        delay(100)
+                        tembakLangsungKeJohann()
+                        delay(2000)
+                        if (!connected && millis1 - millis2 > 10000) {
+                            removeBond(johannDevice)
+
+                            tembakLangsungKeJohann()
+                        }
 
                     }
                 }
@@ -256,6 +273,21 @@ class MainActivity : ComponentActivity() {
     }
 
     @SuppressLint("MissingPermission")
+    private fun tembakLangsungKeJohann() {
+        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothAdapter = bluetoothManager.adapter
+
+        val macAddressJohann = "E8:3D:C1:95:76:02"
+
+        johannDevice = bluetoothAdapter!!.getRemoteDevice(macAddressJohann)
+
+        Log.d(BLname, "Langsung menyambung ke MAC Address...")
+
+        // Langsung panggil fungsi sambung tanpa perlu Scan lagi!
+        sambungkanKeGATT(johannDevice!!)
+    }
+
+    @SuppressLint("MissingPermission")
     private fun mulaiScanBLE() {
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
@@ -287,6 +319,7 @@ class MainActivity : ComponentActivity() {
             override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
                     Log.d(BLname, "Jembatan Terhubung! Mencari laci data (Service)...")
+
                     connected = true
                     gatt?.discoverServices() // Cari Service UUID
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -313,13 +346,6 @@ class MainActivity : ComponentActivity() {
         if (connected && bleCharacteristic != null && bluetoothGatt != null) {
             bleCharacteristic?.value = perintah.toByteArray()
             bluetoothGatt?.writeCharacteristic(bleCharacteristic)
-        }
-    }
-    private fun removeBond(device: BluetoothDevice) {
-        try {
-            device::class.java.getMethod("removeBond").invoke(device)
-        } catch (e: Exception) {
-            Log.e("TAG", "Removing bond has been failed. ${e.message}")
         }
     }
     override fun onPause() {
@@ -352,6 +378,22 @@ class MainActivity : ComponentActivity() {
             ActivityCompat.requestPermissions(this, belumDiizinkan.toTypedArray(), 1)
         }
     }
+
+    private fun removeBond(device: BluetoothDevice?) {
+        try {
+            // Gunakan reflection aman, hanya jika device tidak null
+            device?.let {
+                val method = it.javaClass.getMethod("removeBond")
+                method.invoke(it)
+                Log.d(BLname, "Bond/Pairing berhasil dihapus dari sistem.")
+            }
+        } catch (e: Exception) {
+            Log.e(BLname, "Gagal unpair: ${e.message}")
+        }
+    }
+
+
+
 
     override fun onDestroy() {
         super.onDestroy()
