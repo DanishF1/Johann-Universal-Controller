@@ -102,6 +102,35 @@ class MainActivity : ComponentActivity() {
         })
     }
 
+    @SuppressLint("MissingPermission")
+    private fun musnahkanKoneksi() {
+        // 1. Matikan semua loop detak jantung dan radar
+        BLE?.cancel()
+        heartbeat?.cancel()
+
+        // 2. Gunakan coroutine kecil untuk memastikan "STOPBLE" terkirim dengan selamat
+        // sebelum kita membakar jembatannya
+        lifecycleScope.launch(Dispatchers.IO) {
+            if (connected) {
+                kirimPerintah("STOPBLE")
+                delay(150) // Beri napas 0.15 detik agar paket data sempat terbang ke ESP32
+            }
+
+            // 3. Eksekusi pemusnahan massal di jalur utama
+            kotlinx.coroutines.withContext(Dispatchers.Main) {
+                bluetoothGatt?.disconnect() // Putus jembatan secara resmi
+                delay(50)                   // Tunggu Android memproses putusnya
+                bluetoothGatt?.close()      // Bakar memori jembatannya dari HP
+                bluetoothGatt = null
+                bleCharacteristic = null
+
+                removeBond(johannDevice)    // Hapus riwayat (Unpair)
+                connected = false
+                Log.d(BLname, "KONEKSI TELAH DIMUSNAHKAN SEPERTI TIDAK PERNAH ADA. 💥")
+            }
+        }
+    }
+
     private fun controlling() {
         val ascendBut: Switch = findViewById(R.id.Ascend)
         val hoverBut: Switch = findViewById(R.id.Hover)
@@ -269,44 +298,56 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            else if (isChecked && connected) {
-                ConnectToBle.isEnabled = false // Bekukan tombol sementara
-                customToast.text = "Already Connected to Johann"
-                connected = true
+            // 2. KONDISI: MEMUTUS KONEKSI LEWAT TOMBOL BLE
+            else if (!isChecked && connected) {
+                musnahkanKoneksi() // Langsung panggil fungsi nuklir kita!
+
+                customToast.text = "Disconnected from Johann"
                 customToast.animate().alpha(1f).setDuration(700).withEndAction {
                     customToast.animate().alpha(0f).setDuration(700).start()
                 }.start()
             }
 
+            // 3. KONDISI: SUDAH NYAMBUNG TAPI USER ISENG MENCET (DIBLOKIR)
+            else if (isChecked && connected) {
+                ConnectToBle.isEnabled = false
+                customToast.text = "Already Connected to Johann"
+                customToast.animate().alpha(1f).setDuration(700).withEndAction {
+                    customToast.animate().alpha(0f).setDuration(700).start()
+                    ConnectToBle.isEnabled = true // Nyalakan lagi setelah animasi selesai
+                }.start()
+                // (Logika pengecekan heartbeat untuk perubahan tombol dipindah ke fungsi terpisah agar bersih)
+                mulaiHeartbeat(hoverBut, ascendBut, descendBut)
+            }
+
+            // 4. KONDISI: BATAL MENCARI SEBELUM KETEMU
             else if (!isChecked && !connected) {
                 BLE?.cancel()
                 connected = false
                 Log.d(BLname, "Pencarian Dibatalkan.")
             }
 
-            // (Logika pengecekan heartbeat untuk perubahan tombol dipindah ke fungsi terpisah agar bersih)
-            mulaiHeartbeat(hoverBut, ascendBut, descendBut)
+
         }
         RecVi.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                kirimPerintah("STOPBLE")
-                var m: Long = 0L
-                m = System.currentTimeMillis()
-                if (m > 1300){
-                    ConnectToBle.isChecked = false
-                    ConnectToBle.isEnabled = false
-                    disconnect()
-                    BLE?.cancel()
-                    heartbeat?.cancel() // Matikan detak jantung
-                    connected = false
-                    removeBond(johannDevice)
-                    customToast.text = "Disconnected from Johann"
-                    customToast.animate().alpha(1f).setDuration(700).withEndAction {
-                        customToast.animate().alpha(0f).setDuration(700).start()
-                    }.start()
-                    Log.d(BLname, "Disconnected Manual")
-                }
+                // 1. Matikan tampilan Switch BLE
+                ConnectToBle.isChecked = false
+                ConnectToBle.isEnabled = false
 
+                // 2. MUSNAHKAN KONEKSI SAMPAI KE AKAR
+                musnahkanKoneksi()
+
+                // 3. Animasi UI
+                customToast.text = "Disconnected from Johann"
+                customToast.animate().alpha(1f).setDuration(700).withEndAction {
+                    customToast.animate().alpha(0f).setDuration(700).start()
+                }.start()
+
+            } else {
+                // Jika RecVi dimatikan, izinkan user menyambung BLE lagi
+                ConnectToBle.isEnabled = true
+                Log.d(BLname, "Enable to Connect")
             }
         }
 
