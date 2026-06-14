@@ -60,10 +60,13 @@ var switchsJob3: Job? = null
 var BLE: Job? = null
 var heartbeat: Job? = null
 var connected: Boolean = false
+var joyX: Int = 0
+var joyY: Int = 0
 var timelimitBL: Job? = null
 var showem: Boolean = false
 var johannDevice: android.bluetooth.BluetoothDevice? = null
 var send: Job? = null
+
 
 class MainActivity : ComponentActivity() {
 
@@ -82,11 +85,63 @@ class MainActivity : ComponentActivity() {
         initializing = true
         controlling()
         altitude()
-
-
+        joystick()
     }
+    private fun joystick(){
+        val base = findViewById<androidx.cardview.widget.CardView>(R.id.joystickBase)
+        val hat = findViewById<androidx.cardview.widget.CardView>(R.id.joystickHat)
 
+        var centerX = 0f
+        var centerY = 0f
+        var maxRadius = 0f
+
+        // Mengukur ukuran lingkaran saat dirender pertama kali
+        base.viewTreeObserver.addOnGlobalLayoutListener {
+            centerX = base.width / 2f
+            centerY = base.height / 2f
+            maxRadius = (base.width / 2f) - (hat.width / 2f)
+        }
+
+        // Membaca sentuhan jempolmu
+        base.setOnTouchListener { _, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN, android.view.MotionEvent.ACTION_MOVE -> {
+                    // Hitung jarak jari dari titik tengah
+                    var dx = event.x - centerX
+                    var dy = event.y - centerY
+                    val distance = kotlin.math.hypot(dx.toDouble(), dy.toDouble()).toFloat()
+
+                    // Mencegah lingkaran oranye keluar dari alas abu-abu
+                    if (distance > maxRadius) {
+                        val ratio = maxRadius / distance
+                        dx *= ratio
+                        dy *= ratio
+                    }
+
+                    // Geser UI lingkaran oranye
+                    hat.translationX = dx
+                    hat.translationY = dy
+
+                    // Kalkulasi ke koordinat X dan Y (-100 sampai 100)
+                    joyX = ((dx / maxRadius) * 100).toInt()
+                    joyY = ((-dy / maxRadius) * 100).toInt()
+
+                    Log.d(BLname, "Joystick X: $joyX | Y: $joyY")
+                }
+                android.view.MotionEvent.ACTION_UP -> {
+                    // Saat jari dilepas, joystick kembali mantul ke tengah (titik nol)
+                    hat.translationX = 0f
+                    hat.translationY = 0f
+                    joyX = 0
+                    joyY = 0
+                    Log.d(BLname, "Joystick Released! X: 0 | Y: 0")
+                }
+            }
+            true
+        }
+    }
     private fun altitude() {
+        val customToast: TextView = findViewById(R.id.newtoast)
         val altitudeSeek: SeekBar = findViewById(R.id.altitude)
         val calc: TextView = findViewById(R.id.percentage)
         val Reset: ImageButton = findViewById(R.id.ResetSeek)
@@ -94,16 +149,10 @@ class MainActivity : ComponentActivity() {
         Reset.setOnClickListener {
             altitudeSeek.progress = 0
             altitudeValue = 0f
-            calc.text = "0%"
+            calc.text = "0.0%"
             Log.d("RESET SEEK", "RESETED")
         }
-        send = lifecycleScope.launch(Dispatchers.IO){
-            while(altitudeValue > 1){
-                kirimPerintah((altitudeValue/100).toString())
-                delay (99)
-                Log.d("SENDING", "$altitudeValue")
-            }
-        }
+
         altitudeSeek.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
 
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
