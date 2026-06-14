@@ -13,6 +13,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android. widget. ImageButton
 import android.util.Log
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
@@ -88,7 +89,14 @@ class MainActivity : ComponentActivity() {
     private fun altitude() {
         val altitudeSeek: SeekBar = findViewById(R.id.altitude)
         val calc: TextView = findViewById(R.id.percentage)
+        val Reset: ImageButton = findViewById(R.id.ResetSeek)
         var forcalc: Float = 0f
+        Reset.setOnClickListener {
+            altitudeSeek.progress = 0
+            altitudeValue = 0f
+            calc.text = "0%"
+            Log.d("RESET SEEK", "RESETED")
+        }
         send = lifecycleScope.launch(Dispatchers.IO){
             while(altitudeValue > 1){
                 kirimPerintah((altitudeValue/100).toString())
@@ -147,6 +155,7 @@ class MainActivity : ComponentActivity() {
         val descendBut: Switch = findViewById(R.id.Descend)
         val ConnectToBle: Switch = findViewById(R.id.ConnectBLE)
         val RecVi: Switch = findViewById(R.id.RecVideo)
+
         val altitudeSeek: SeekBar = findViewById(R.id.altitude)
         val customToast: TextView = findViewById(R.id.newtoast)
         customToast.alpha = 0f
@@ -384,6 +393,8 @@ class MainActivity : ComponentActivity() {
                 Log.d(BLname, "Enable to Connect")
             }
         }
+
+
     }
 
     private fun mulaiKirimAltitude() {

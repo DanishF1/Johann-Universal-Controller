@@ -150,6 +150,19 @@
 
         </SeekBar>
 
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/custom_seekbar_thumb"
+            android:rotation="90"
+            android:scaleY="2"
+            android:id="@+id/ResetSeek"
+            android:scaleX="2"
+            android:layout_marginRight="23dp"
+            app:layout_constraintBottom_toBottomOf="@id/Descend"
+            app:layout_constraintRight_toLeftOf="@id/Descend">
+
+        </ImageButton>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -194,6 +207,22 @@
             app:layout_constraintLeft_toLeftOf="@id/Descend"
             app:layout_constraintRight_toRightOf="@id/Descend"
             app:layout_constraintTop_toBottomOf="@id/Descend"
+
+
+            ></TextView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="45dp"
+            android:fontFamily="@font/poppins_regular"
+            android:rotation="90"
+            android:text="Reset Bar"
+            android:textColor="@color/white"
+            android:textSize="40px"
+            app:layout_constraintLeft_toLeftOf="@id/ResetSeek"
+            app:layout_constraintRight_toRightOf="@id/ResetSeek"
+            app:layout_constraintTop_toBottomOf="@id/ResetSeek"
 
 
             ></TextView>
@@ -262,6 +291,7 @@
             android:id="@+id/percentage">
 
         </TextView>
+
 
 
 
