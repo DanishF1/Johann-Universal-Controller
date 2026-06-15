@@ -69,6 +69,7 @@ var timelimitBL: Job? = null
 var showem: Boolean = false
 var johannDevice: android.bluetooth.BluetoothDevice? = null
 var send: Job? = null
+var allowRecvi: Boolean = false
 
 
 
@@ -94,19 +95,49 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    private fun warning(context: Context, title: String, message: String, messageToast: String){
-        android.app.AlertDialog.Builder(context)
+    private fun warning(
+        context: Context,
+        title: String,
+        message: String,
+        messageToast: String,
+        onAksiOk: () -> Unit,     // Perintah jika OK
+        onAksiBatal: () -> Unit   // Perintah jika BATAL
+    ) {
+        val customToast: TextView = findViewById(R.id.newtoast)
+        val builder = androidx.appcompat.app.AlertDialog.Builder(context)
             .setIcon(R.mipmap.ic_launcher)
-
             .setTitle(title)
-
             .setMessage(message.trimIndent())
+            .setCancelable(false)
 
+            // JIKA USER MENCET OK
             .setPositiveButton("Ok") { dialog, _ ->
                 dialog.dismiss()
-                Toast.makeText(context, messageToast, Toast.LENGTH_LONG).show()
+                onAksiOk() // Eksekusi pemutusan koneksi di sini!
+
+                customToast.text = "Johann Disconnected"
+                customToast.animate().alpha(1f).setDuration(1500)
+                    .setInterpolator(DecelerateInterpolator()).withEndAction {
+                        customToast.animate().alpha(0f).setDuration(1500)
+                            .setInterpolator(AccelerateInterpolator()).start()
+                    }.start()
             }
-            .show()
+
+            // JIKA USER MENCET BATAL
+            .setNegativeButton("Batal") { dialog, _ ->
+                dialog.dismiss()
+                onAksiBatal() // Kembalikan switch seperti semula
+            }
+
+        val alertDialog = builder.create()
+        alertDialog.show()
+
+        // Mewarnai tombol
+        val positiveButton = alertDialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE)
+        positiveButton.setTextColor(android.graphics.Color.WHITE)
+
+        val negativeButton = alertDialog.getButton(android.content.DialogInterface.BUTTON_NEGATIVE)
+        negativeButton.setTextColor(android.graphics.Color.WHITE)
     }
 
     private fun joystick(){
@@ -450,18 +481,27 @@ class MainActivity : ComponentActivity() {
         // ==========================================
         // 5. TOMBOL REC VIDEO (NUKLIR)
         // ==========================================
-        RecVi.setOnCheckedChangeListener { _, isChecked ->
+        RecVi.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
-                warning(this@MainActivity,"lll","lll","lll")
-                ConnectToBle.isChecked = false
-                ConnectToBle.isEnabled = false
+                warning(
+                    context = this@MainActivity,
+                    title = "WARNING",
+                    message = "Disconnecting Johann will automatically remove its Bluetooth from the phone. If disconnected while flying, Johann will descend automatically.",
+                    messageToast = "BLE Connection Destroyed.",
 
-                musnahkanKoneksi()
+                    onAksiOk = {
+                        // KODE INI HANYA JALAN JIKA TOMBOL 'OK' DIPENCET
+                        ConnectToBle.isChecked = false
+                        ConnectToBle.isEnabled = false
+                        musnahkanKoneksi()
+                        Log.d("YOOOOO", "CONNECTION DESTROYED")
+                    },
 
-                customToast.text = "Disconnected from Johann"
-                customToast.animate().alpha(1f).setDuration(700).withEndAction {
-                    customToast.animate().alpha(0f).setDuration(700).start()
-                }.start()
+                    onAksiBatal = {
+                        // JIKA BATAL, MATIKAN KEMBALI SWITCH REC-VI SECARA OTOMATIS
+                        buttonView.isChecked = false
+                    }
+                )
 
             } else {
                 ConnectToBle.isEnabled = true
