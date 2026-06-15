@@ -36,6 +36,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.UUID
 import android.os.SystemClock
+import android.widget.Toast
+import androidx.core.content.ContentProviderCompat.requireContext
 
 val SERVICE_UUID: UUID = UUID.fromString("4fafc201-1fb5-459e-8fcc-c5c9c331914b")
 val CHAR_UUID: UUID = UUID.fromString("beb5483e-36e1-4688-b7f5-ea07361b26a8")
@@ -47,7 +49,7 @@ var bleCharacteristic: BluetoothGattCharacteristic? = null
 var B: BluetoothDevice? = null
 
 
-val main = R.layout.main_layout
+val main = R.layout.main_layout_landscape
 const val BLname: String = "Johann 1.0"
 var isButtonActive: Boolean = false
 var initializing: Boolean = false
@@ -69,12 +71,14 @@ var johannDevice: android.bluetooth.BluetoothDevice? = null
 var send: Job? = null
 
 
+
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(main)
+        actionBar?.hide()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
@@ -87,7 +91,24 @@ class MainActivity : ComponentActivity() {
         controlling()
         altitude()
         joystick()
+
     }
+
+    private fun warning(context: Context, title: String, message: String, messageToast: String){
+        android.app.AlertDialog.Builder(context)
+            .setIcon(R.mipmap.ic_launcher)
+
+            .setTitle(title)
+
+            .setMessage(message.trimIndent())
+
+            .setPositiveButton("Ok") { dialog, _ ->
+                dialog.dismiss()
+                Toast.makeText(context, messageToast, Toast.LENGTH_LONG).show()
+            }
+            .show()
+    }
+
     private fun joystick(){
         val base = findViewById<androidx.cardview.widget.CardView>(R.id.joystickBase)
         val hat = findViewById<androidx.cardview.widget.CardView>(R.id.joystickHat)
@@ -145,15 +166,15 @@ class MainActivity : ComponentActivity() {
         val customToast: TextView = findViewById(R.id.newtoast)
         val altitudeSeek: SeekBar = findViewById(R.id.altitude)
         val calc: TextView = findViewById(R.id.percentage)
-        val Reset: ImageButton = findViewById(R.id.ResetSeek)
+        //val Reset: ImageButton = findViewById(R.id.ResetSeek)
         var forcalc: Float = 0f
-        Reset.setOnClickListener {
+        //Reset.setOnClickListener {
             //Optional, Not really needed for now
            // altitudeSeek.progress = 0
             //altitudeValue = 0f
             //calc.text = "0.0%"
             //Log.d("RESET SEEK", "RESETED")
-        }
+        //}
 
         altitudeSeek.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
 
@@ -200,12 +221,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun warning(context: Context){
-        MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_App_AlertDialog)
-            .setIcon(R.mipmap.ic_launcher)
-            .setTitle("Eksak Dev Production")
-            .set
-    }
+
 
     private fun controlling() {
         val ascendBut: Switch = findViewById(R.id.Ascend)
@@ -436,6 +452,7 @@ class MainActivity : ComponentActivity() {
         // ==========================================
         RecVi.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
+                warning(this@MainActivity,"lll","lll","lll")
                 ConnectToBle.isChecked = false
                 ConnectToBle.isEnabled = false
 

@@ -1,7 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.JohannUniversalController" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
-    <style name="Theme.JohannUniversalController" parent="android:Theme.Material.Light.NoActionBar" />
-    <style name="ThemeOverlay.App.AlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog"/>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
 
+        <item name="android:windowFullscreen">true</item>
+
+        <item name="android:statusBarColor">@android:color/transparent</item>
+
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+
+    </style>
 </resources>

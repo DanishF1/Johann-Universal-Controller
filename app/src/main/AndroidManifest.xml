@@ -34,7 +34,7 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.JohannUniversalController"
-            android:screenOrientation="portrait"
+            android:screenOrientation="landscape"
 
             >
             <intent-filter>
