@@ -8,6 +8,7 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothManager
+import com. google. android. material. dialog. MaterialAlertDialogBuilder
 import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.content.pm.PackageManager
@@ -197,6 +198,13 @@ class MainActivity : ComponentActivity() {
                 Log.d(BLname, "KONEKSI TELAH DIMUSNAHKAN SEPERTI TIDAK PERNAH ADA. 💥")
             }
         }
+    }
+
+    private fun warning(context: Context){
+        MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_App_AlertDialog)
+            .setIcon(R.mipmap.ic_launcher)
+            .setTitle("Eksak Dev Production")
+            .set
     }
 
     private fun controlling() {

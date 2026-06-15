@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:fitsSystemWindows="true"
+    android:background="@color/black"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="500px"
+            android:layout_height="500px"
+            android:src="@mipmap/ic_launcher"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+        </ImageView>
+
+        <Switch
+            android:id="@+id/Ascend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="27dp"
+            android:gravity="center"
+            android:thumbTint="#FFFFFF"
+            android:thumbTintMode="multiply"
+            android:trackTint="#B0B0B0"
+            android:trackTintMode="src_in"
+            android:scaleX="2.225"
+            android:scaleY="2.225"
+            android:textOff=""
+            android:textOn=""
+            android:layout_marginLeft="40dp"
+            app:layout_constraintLeft_toRightOf="@id/logo"
+            app:layout_constraintBottom_toBottomOf="@id/logo"
+            app:layout_constraintTop_toTopOf="@id/logo"
+            app:showText="false"
+            ></Switch>
+
+        <Switch
+            android:id="@+id/Hover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="31dp"
+            android:gravity="center"
+            android:thumbTint="#FFFFFF"
+            android:thumbTintMode="multiply"
+            android:trackTint="#B0B0B0"
+            android:trackTintMode="src_in"
+            android:scaleX="2.225"
+            android:scaleY="2.225"
+            android:textOff=""
+            android:textOn=""
+            app:layout_constraintStart_toStartOf="@id/Ascend"
+            app:layout_constraintTop_toBottomOf="@id/Ascend"
+            app:showText="false"
+            android:layout_marginRight="15dp"
+            ></Switch>
+
+        <Switch
+            android:id="@+id/Descend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="31dp"
+            android:gravity="center"
+            android:thumbTint="#FFFFFF"
+            android:thumbTintMode="multiply"
+            android:trackTint="#B0B0B0"
+            android:trackTintMode="src_in"
+            android:scaleX="2.225"
+            android:scaleY="2.225"
+            android:textOff=""
+            android:textOn=""
+            app:layout_constraintStart_toStartOf="@id/Hover"
+            app:layout_constraintTop_toBottomOf="@id/Hover"
+            app:showText="false"
+            android:layout_marginRight="15dp"
+            >
+
+        </Switch>
+
+        <Switch
+            android:id="@+id/ConnectBLE"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="27dp"
+            android:gravity="center"
+            android:thumbTint="#FFFFFF"
+            android:thumbTintMode="multiply"
+            android:trackTint="#B0B0B0"
+            android:trackTintMode="src_in"
+            android:scaleX="2.225"
+            android:scaleY="2.225"
+            android:textOff=""
+            android:textOn=""
+            app:layout_constraintBottom_toBottomOf="@id/logo"
+            app:layout_constraintTop_toTopOf="@id/logo"
+            app:layout_constraintRight_toLeftOf="@id/logo"
+            app:showText="false"
+            ></Switch>
+
+        <Switch
+            android:id="@+id/RecVideo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="31dp"
+            android:gravity="center"
+            android:thumbTint="#FFFFFF"
+            android:thumbTintMode="multiply"
+            android:trackTint="#B0B0B0"
+            android:trackTintMode="src_in"
+            android:scaleX="2.225"
+            android:scaleY="2.225"
+            android:textOff=""
+            android:textOn=""
+            android:layout_marginRight="15dp"
+            app:layout_constraintStart_toStartOf="@id/ConnectBLE"
+            app:layout_constraintTop_toBottomOf="@id/ConnectBLE"
+            app:showText="false"
+            ></Switch>
+
+        <SeekBar
+            android:id="@+id/altitude"
+            android:layout_width="900px"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="155dp"
+            android:progressDrawable="@drawable/custom_seekbar_track"
+            android:scaleX="1"
+            android:scaleY="1.2"
+            android:splitTrack="false"
+            android:rotation="-90"
+            android:thumb="@drawable/custom_seekbar_thumb"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintLeft_toRightOf="@id/Descend"
+            >
+
+        </SeekBar>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </androidx.drawerlayout.widget.DrawerLayout>
+

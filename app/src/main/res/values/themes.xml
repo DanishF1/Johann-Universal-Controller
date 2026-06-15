@@ -2,4 +2,6 @@
 <resources>
 
     <style name="Theme.JohannUniversalController" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="ThemeOverlay.App.AlertDialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog"/>
+
 </resources>
