@@ -147,10 +147,11 @@ class MainActivity : ComponentActivity() {
         val Reset: ImageButton = findViewById(R.id.ResetSeek)
         var forcalc: Float = 0f
         Reset.setOnClickListener {
-            altitudeSeek.progress = 0
-            altitudeValue = 0f
-            calc.text = "0.0%"
-            Log.d("RESET SEEK", "RESETED")
+            //Optional, Not really needed for now
+           // altitudeSeek.progress = 0
+            //altitudeValue = 0f
+            //calc.text = "0.0%"
+            //Log.d("RESET SEEK", "RESETED")
         }
 
         altitudeSeek.setOnSeekBarChangeListener(object: SeekBar.OnSeekBarChangeListener {
@@ -191,7 +192,7 @@ class MainActivity : ComponentActivity() {
                 bluetoothGatt = null
                 bleCharacteristic = null
 
-                removeBond(johannDevice)    // Hapus riwayat (Unpair)
+                removeBond(johannDevice)
                 connected = false
                 Log.d(BLname, "KONEKSI TELAH DIMUSNAHKAN SEPERTI TIDAK PERNAH ADA. 💥")
             }
