@@ -456,18 +456,17 @@ class MainActivity : ComponentActivity() {
             while (isActive) {
                 // Baca nilai terkini SETIAP iterasi — nilai bisa berubah sewaktu loop berjalan
                 val currentAltitude = (altitudeValue / 100.0f).toString()
+                val saatnya = (!isButtonActive && altitudeValue > 0)
                 val currentJoyX = joyX
                 val currentJoyY = joyY
                 val currentJoystickAktif = (currentJoyX != 0 || currentJoyY != 0)
 
                 when {
                     // ✅ MODE 1: Joystick digerakkan + tidak ada tombol mode terbang
-                    currentJoystickAktif && !isButtonActive -> {
+                    currentJoystickAktif && !isButtonActive && altitudeValue > 1 -> {
                         // Kirim data XY dan Altitude secara BERGANTIAN
-                        kirimPerintah("X${currentJoyX}Y${currentJoyY}")
+                        kirimPerintah("J:${currentJoyX},${currentJoyY}")
                         Log.d(BLname, "→ Joystick: X=$currentJoyX | Y=$currentJoyY")
-                        delay(150)
-
                         kirimPerintah(currentAltitude)
                         Log.d("SENDING", "→ Altitude: $currentAltitude")
                         delay(150)
@@ -476,13 +475,13 @@ class MainActivity : ComponentActivity() {
                     // ✅ MODE 2: Joystick digerakkan + tombol mode terbang aktif (Hover/Ascend/Descend)
                     // Switch job sudah mengirim perintah mode-nya sendiri, kita hanya kirim arah XY
                     currentJoystickAktif && isButtonActive -> {
-                        kirimPerintah("X${currentJoyX}Y${currentJoyY}")
+                        kirimPerintah("J:${currentJoyX},${currentJoyY}")
                         Log.d(BLname, "→ [Mode Aktif] Joystick: X=$currentJoyX | Y=$currentJoyY")
                         delay(150)
                     }
 
                     // ✅ MODE 3: Joystick di tengah, tidak ada tombol mode — kirim Altitude sebagai Heartbeat
-                    !currentJoystickAktif && !isButtonActive -> {
+                    !currentJoystickAktif && !isButtonActive && altitudeValue > 1 -> {
                         kirimPerintah(currentAltitude)
                         Log.d("SENDING", "→ Heartbeat Altitude: $currentAltitude")
                         delay(150)
