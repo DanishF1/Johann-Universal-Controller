@@ -42,16 +42,11 @@ val CHAR_UUID: UUID = UUID.fromString("beb5483e-36e1-4688-b7f5-ea07361b26a8")
 var bluetoothAdapter: BluetoothAdapter? = null
 var bluetoothGatt: BluetoothGatt? = null
 var bleCharacteristic: BluetoothGattCharacteristic? = null
-
-var B: BluetoothDevice? = null
-
 val main = R.layout.main_layout_landscape
 const val BLname: String = "Johann 1.0"
 var isButtonActive: Boolean = false
 var initializing: Boolean = false
-var altitudeValue: Float = 0.0f
-var millis1: Long = 0L
-var millis2: Long = 0L
+var altitudeValue: Int = 0
 var breakout1: Long = 0L
 var switchsJob1: Job? = null
 var switchsJob2: Job? = null
@@ -65,8 +60,9 @@ var timelimitBL: Job? = null
 var showem: Boolean = false
 var johannDevice: android.bluetooth.BluetoothDevice? = null
 var send: Job? = null
-var allowRecvi: Boolean = false
-// JJob dihapus — joystick tidak lagi spawn coroutine sendiri
+var dessert: Job? = null
+var state: String = ""
+
 
 
 class MainActivity : ComponentActivity() {
@@ -88,6 +84,26 @@ class MainActivity : ComponentActivity() {
         controlling()
         altitude()
         joystick()
+    }
+
+    private fun SendEverything(
+        State: String,
+        Altitute: Int,
+        JoystickX: Int,
+        JoystickY: Int,
+    ){
+        if(connected){
+            dessert = lifecycleScope.launch(Dispatchers.IO) {
+                while (isActive) {
+                    kirimPerintah("$State,$Altitute,$JoystickX,$JoystickY")
+                    Log.d(BLname, "$State,$Altitute,$JoystickX,$JoystickY")
+                    delay(150)
+                }
+            }
+        }else{
+            dessert?.cancel()
+        }
+
     }
 
     private fun warning(
@@ -170,7 +186,6 @@ class MainActivity : ComponentActivity() {
                         mulaiKirimAltitude()
                     }
 
-                    Log.d(BLname, "Joystick X: $joyX | Y: $joyY")
                 }
 
                 android.view.MotionEvent.ACTION_UP -> {
@@ -194,10 +209,10 @@ class MainActivity : ComponentActivity() {
         altitudeSeek.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser && !isButtonActive) {
-                    altitudeValue = progress.toFloat()
+                    altitudeValue = progress
+
                     calc.setText("$altitudeValue%")
                     Log.d("SeekBar $BLname", "Altitude: $altitudeValue")
-                    // Tidak perlu kirimPerintah di sini — loop send akan mengirimnya
                 }
             }
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
@@ -211,10 +226,6 @@ class MainActivity : ComponentActivity() {
         heartbeat?.cancel()
 
         lifecycleScope.launch(Dispatchers.IO) {
-            if (connected) {
-                kirimPerintah("STOPBLE")
-                delay(150)
-            }
             kotlinx.coroutines.withContext(Dispatchers.Main) {
                 bluetoothGatt?.disconnect()
                 delay(50)
@@ -249,23 +260,17 @@ class MainActivity : ComponentActivity() {
                 isButtonActive = true
                 altitudeSeek.isEnabled = false
                 send?.cancel()
-
+                SendEverything(state, altitudeValue, joyX, joyY)
                 customToast.text = "Hovering!"
                 customToast.animate().alpha(1f).setDuration(700)
                     .setInterpolator(DecelerateInterpolator()).withEndAction {
                         customToast.animate().alpha(0f).setDuration(700)
                             .setInterpolator(AccelerateInterpolator()).start()
                     }.start()
-
-                switchsJob1 = lifecycleScope.launch(Dispatchers.IO) {
-                    while (isActive) {
                         Log.d(BLname, "Hover Button is Active")
-                        kirimPerintah("HOVER")
-                        delay(100)
-                    }
-                }
+                        state = "HOVER"
+
             } else {
-                switchsJob1?.cancel()
                 if (!ascendBut.isChecked && !descendBut.isChecked) {
                     isButtonActive = false
                     altitudeSeek.isEnabled = true
@@ -284,23 +289,17 @@ class MainActivity : ComponentActivity() {
                 isButtonActive = true
                 altitudeSeek.isEnabled = false
                 send?.cancel()
-
+                SendEverything(state, altitudeValue, joyX, joyY)
                 customToast.text = "Ascending!"
                 customToast.animate().alpha(1f).setDuration(700)
                     .setInterpolator(DecelerateInterpolator()).withEndAction {
                         customToast.animate().alpha(0f).setDuration(700)
                             .setInterpolator(AccelerateInterpolator()).start()
                     }.start()
-
-                switchsJob2 = lifecycleScope.launch(Dispatchers.IO) {
-                    while (isActive) {
                         Log.d(BLname, "Ascend Button is Active")
-                        kirimPerintah("ASCEND")
-                        delay(100)
-                    }
-                }
+                        state = "ASCEND"
+
             } else {
-                switchsJob2?.cancel()
                 if (!hoverBut.isChecked && !descendBut.isChecked) {
                     isButtonActive = false
                     altitudeSeek.isEnabled = true
@@ -319,7 +318,7 @@ class MainActivity : ComponentActivity() {
                 isButtonActive = true
                 altitudeSeek.isEnabled = false
                 send?.cancel()
-
+                SendEverything(state, altitudeValue, joyX, joyY)
                 customToast.text = "Descending!"
                 customToast.animate().alpha(1f).setDuration(700)
                     .setInterpolator(DecelerateInterpolator()).withEndAction {
@@ -327,16 +326,10 @@ class MainActivity : ComponentActivity() {
                             .setInterpolator(AccelerateInterpolator()).start()
                     }.start()
 
-                switchsJob3 = lifecycleScope.launch(Dispatchers.IO) {
-                    while (isActive) {
                         Log.d(BLname, "Descend Button is Active")
-                        kirimPerintah("DESCEND")
-                        delay(100)
-                    }
-                }
+                        state = "DESCEND"
+
             } else {
-                switchsJob3?.cancel()
-                kirimPerintah("STOP_DESCEND")
                 if (!hoverBut.isChecked && !ascendBut.isChecked) {
                     isButtonActive = false
                     altitudeSeek.isEnabled = true
@@ -425,7 +418,7 @@ class MainActivity : ComponentActivity() {
                         ConnectToBle.isChecked = false
                         ConnectToBle.isEnabled = false
                         musnahkanKoneksi()
-                        kirimPerintah("STOP")
+                        state = "STOP"
                         Log.d("YOOOOO", "CONNECTION DESTROYED")
                     },
                     onAksiBatal = {
@@ -441,72 +434,9 @@ class MainActivity : ComponentActivity() {
 
     private fun mulaiKirimAltitude() {
         // Bunuh job lama agar tidak ada pengiriman ganda
-        kirimPerintah("STOP")
+        state = "STOP"
         Log.d(BLname, "Kirim perintah STOP")
-        send?.cancel()
-
-        if (!connected) {
-            send = null
-            return
-        }
-
-        val joystickAktif = (joyX != 0 || joyY != 0)
-
-        send = lifecycleScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                // Baca nilai terkini SETIAP iterasi — nilai bisa berubah sewaktu loop berjalan
-                val currentAltitude = (altitudeValue / 100.0f).toString()
-                val saatnya = (!isButtonActive && altitudeValue > 0)
-                val currentJoyX = joyX
-                val currentJoyY = joyY
-                val currentJoystickAktif = (currentJoyX != 0 || currentJoyY != 0)
-
-                when {
-                    // ✅ MODE 1: Joystick digerakkan + tidak ada tombol mode terbang
-                    currentJoystickAktif && !isButtonActive && altitudeValue > 1 -> {
-                        // Kirim data XY dan Altitude secara BERGANTIAN
-                        kirimPerintah("J:${currentJoyX},${currentJoyY}")
-                        Log.d(BLname, "→ Joystick: X=$currentJoyX | Y=$currentJoyY")
-                        kirimPerintah(currentAltitude)
-                        Log.d("SENDING", "→ Altitude: $currentAltitude")
-                        delay(150)
-                    }
-
-                    // ✅ MODE 2: Joystick digerakkan + tombol mode terbang aktif (Hover/Ascend/Descend)
-                    // Switch job sudah mengirim perintah mode-nya sendiri, kita hanya kirim arah XY
-                    currentJoystickAktif && isButtonActive -> {
-                        kirimPerintah("J:${currentJoyX},${currentJoyY}")
-                        Log.d(BLname, "→ [Mode Aktif] Joystick: X=$currentJoyX | Y=$currentJoyY")
-                        delay(150)
-                    }
-
-                    // ✅ MODE 3: Joystick di tengah, tidak ada tombol mode — kirim Altitude sebagai Heartbeat
-                    !currentJoystickAktif && !isButtonActive && altitudeValue > 1 -> {
-                        kirimPerintah(currentAltitude)
-                        Log.d("SENDING", "→ Heartbeat Altitude: $currentAltitude")
-                        delay(150)
-                    }
-                    else -> {
-                        delay(150)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun mulaiHeartbeat(hover: Switch, ascend: Switch, descend: Switch) {
-        heartbeat?.cancel()
-        if (connected && !hover.isChecked && !ascend.isChecked && !descend.isChecked) {
-            heartbeat = lifecycleScope.launch(Dispatchers.IO) {
-                while (isActive) {
-                    kirimPerintah("A")
-                    Log.d(BLname, "Heartbeat: Sinyal 'A' terkirim")
-                    delay(2000)
-                }
-            }
-        } else {
-            heartbeat = null
-        }
+        SendEverything(state, altitudeValue, joyX, joyY)
     }
 
     @SuppressLint("MissingPermission")
@@ -537,12 +467,6 @@ class MainActivity : ComponentActivity() {
             }
         }
         scanner?.startScan(scanCallback)
-    }
-
-    private fun disconnect() {
-        kirimPerintah("STOPBLE")
-        bluetoothGatt?.close()
-        bluetoothGatt = null
     }
 
     @SuppressLint("MissingPermission")
