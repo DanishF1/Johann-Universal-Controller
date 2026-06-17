@@ -382,7 +382,6 @@ class MainActivity : ComponentActivity() {
                         ConnectToBle.isChecked = false
                         ConnectToBle.isEnabled = false
                         musnahkanKoneksi()
-                        state = "STOP"
                         Log.d("YOOOOO", "CONNECTION DESTROYED")
                     },
                     onAksiBatal = {
